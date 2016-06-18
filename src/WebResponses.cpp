@@ -350,10 +350,15 @@ void AsyncFileResponse::_setContentType(String path){
 AsyncFileResponse::AsyncFileResponse(FS &fs, String path, String contentType, bool download){
   _code = 200;
   _path = path;
+<<<<<<< HEAD
+=======
+  
+>>>>>>> me-no-dev/master
   if(!download && !fs.exists(_path) && fs.exists(_path+".gz")){
     _path = _path+".gz";
     addHeader("Content-Encoding", "gzip");
   }
+<<<<<<< HEAD
 
   if(download)
     _contentType = "application/octet-stream";
@@ -361,6 +366,56 @@ AsyncFileResponse::AsyncFileResponse(FS &fs, String path, String contentType, bo
     _setContentType(path);
   _content = fs.open(_path, "r");
   _contentLength = _content.size();
+=======
+
+  _content = fs.open(_path, "r");
+  _contentLength = _content.size();
+
+  if(contentType == "")
+    _setContentType(path);
+  else
+    _contentType = contentType;
+
+  int filenameStart = path.lastIndexOf('/') + 1;
+  char buf[26+path.length()-filenameStart];
+  char* filename = (char*)path.c_str() + filenameStart;
+
+  if(download) {
+    // set filename and force download
+    snprintf(buf, sizeof (buf), "attachment; filename=\"%s\"", filename);
+  } else {
+    // set filename and force rendering
+    snprintf(buf, sizeof (buf), "inline; filename=\"%s\"", filename);
+  }
+  addHeader("Content-Disposition", buf);
+
+}
+
+AsyncFileResponse::AsyncFileResponse(File content, String path, String contentType, bool download){
+  _code = 200;
+  _path = path;
+  _content = content;
+  _contentLength = _content.size();
+
+  if(!download && String(_content.name()).endsWith(".gz"))
+    addHeader("Content-Encoding", "gzip");
+
+  if(contentType == "")
+    _setContentType(path);
+  else
+    _contentType = contentType;
+
+  int filenameStart = path.lastIndexOf('/') + 1;
+  char buf[26+path.length()-filenameStart];
+  char* filename = (char*)path.c_str() + filenameStart;
+
+  if(download) {
+    snprintf(buf, sizeof (buf), "attachment; filename=\"%s\"", filename);
+  } else {
+    snprintf(buf, sizeof (buf), "inline; filename=\"%s\"", filename);
+  }
+  addHeader("Content-Disposition", buf);
+>>>>>>> me-no-dev/master
 }
 
 size_t AsyncFileResponse::_fillBuffer(uint8_t *data, size_t len){
